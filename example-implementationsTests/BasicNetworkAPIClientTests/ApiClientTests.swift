@@ -34,41 +34,53 @@ final class ApiClientTests: XCTestCase {
         XCTAssertTrue(!apiClient.baseUrl.isEmpty)
     }
     
-    // test fetchUser returns valid response object with network call
-    func test_apiClient_fetchUser_returnsValidResultObject() async throws {
+    // test fetchUser returns valid success response with user
+    func test_apiClient_fetchUser_response200ReturnsUser() async throws {
         
         let mockNetworkClient = MockNetworkClient()
         apiClient = ApiClient(networkClient: mockNetworkClient)
         
-        let expectedUser = User(id: "1", name: "Example Name", email: "exampleEmail@Email.com")
+        let expectedUser = User(id: "1", name: "John Smith", email: "john.smith@email.com")
+        
         let jsonData = try JSONEncoder().encode(expectedUser)
         
-        mockNetworkClient.resultToReturn = .success(jsonData)
+        let response200 = HTTPURLResponse(
+            url: URL(string: "example_url")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )!
         
-        let result = await apiClient.fetchUser(with: "1")
+        mockNetworkClient.result = .success((jsonData, response200))
         
-        if case .success(let returnedUser) = result {
-            XCTAssertEqual(returnedUser, expectedUser)
-        } else {
-            XCTFail("Expected successful result. \(result)")
-        }
+        let actualUser = try await apiClient.fetchUser(with: "1")
+        
+        XCTAssertEqual(actualUser, expectedUser)
     }
     
-    // test fetchUser returns the correct error on fail
-    func test_apiClient_fetchUser_returnsCorrectError() async {
+    // test fetchUser fails successfully with 404 error
+    func test_apiClient_fetchUser_response404ThrowsError() async {
         
         let mockNetworkClient = MockNetworkClient()
         apiClient = ApiClient(networkClient: mockNetworkClient)
 
-        let expectedError = NetworkError.fetchError
-        mockNetworkClient.resultToReturn = .failure(expectedError)
+        let response404 = HTTPURLResponse(
+            url: URL(string: "example_url")!,
+            statusCode: 404,
+            httpVersion: nil,
+            headerFields: nil
+        )!
         
-        let result = await apiClient.fetchUser(with: "1")
+        mockNetworkClient.result = .success((Data(), response404))
         
-        if case .failure(let returnedError) = result {
-            XCTAssertEqual(returnedError, expectedError)
-        } else {
-            XCTFail("Expected failure result. \(result)")
+        do {
+            _ = try await apiClient.fetchUser(with: "1")
+            XCTFail("Expected fetch user to throw an error, but it succeeded")
+            XCTFail("expected error to be thrown")
+        } catch let error as NetworkError {
+            XCTAssertEqual(error, .serverError(statusCode: 404))
+        } catch {
+            XCTFail("An unexpected error type was thrown: \(error)")
         }
     }
 }

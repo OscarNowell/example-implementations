@@ -10,11 +10,11 @@ import Foundation
 enum NetworkError: Error, Equatable {
     case urlError
     case decodingError
-    case fetchError
+    case serverError(statusCode: Int)
 }
 
 protocol NetworkClient {
-    func fetch(from url: URL) async -> Result<Data, NetworkError>
+    func fetch(from url: URL) async throws -> (Data, URLResponse)
 }
 
 class ApiClient {
@@ -27,24 +27,23 @@ class ApiClient {
         self.networkClient = networkClient
     }
     
-    func fetchUser(with userId: String) async -> Result<User, NetworkError> {
+    func fetchUser(with userId: String) async throws -> User {
         
         guard let url = URL(string: "\(baseUrl)user/\(userId)") else {
-            return .failure(.urlError)
+            throw NetworkError.urlError
         }
         
-        let result = await networkClient.fetch(from: url)
+        let (data, response) = try await networkClient.fetch(from: url)
         
-        switch result {
-        case .failure(let error):
-            return .failure(error)
-        case .success(let data):
-            do {
-                let user = try JSONDecoder().decode(User.self, from: data)
-                return .success(user)
-            } catch {
-                return .failure(.decodingError)
-            }
+        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+            throw NetworkError.serverError(statusCode: statusCode)
+        }
+        
+        do {
+            return try JSONDecoder().decode(User.self, from: data)
+        } catch {
+            throw NetworkError.decodingError
         }
     }
 }
