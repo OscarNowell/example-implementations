@@ -35,18 +35,23 @@ final class ApiClientTests: XCTestCase {
     }
     
     // test fetchUser returns valid response object with network call
-    func test_apiClient_fetchUser_returnsValidUserObject() async throws {
+    func test_apiClient_fetchUser_returnsValidResultObject() async throws {
         
         let mockNetworkClient = MockNetworkClient()
         apiClient = ApiClient(networkClient: mockNetworkClient)
         
         let expectedUser = User(id: "1", name: "Example Name", email: "exampleEmail@Email.com")
         let jsonData = try JSONEncoder().encode(expectedUser)
-        mockNetworkClient.dataToReturn = jsonData
         
-        let user = try await apiClient.fetchUser(with: "1")
+        mockNetworkClient.resultToReturn = .success(jsonData)
         
-        XCTAssertEqual(user, expectedUser)
+        let result = await apiClient.fetchUser(with: "1")
+        
+        if case .success(let returnedUser) = result {
+            XCTAssertEqual(returnedUser, expectedUser)
+        } else {
+            XCTFail("Expected successful result. \(result)")
+        }
     }
     
     // test fetchUser returns the correct error on fail
@@ -56,13 +61,14 @@ final class ApiClientTests: XCTestCase {
         apiClient = ApiClient(networkClient: mockNetworkClient)
 
         let expectedError = NetworkError.fetchError
-        mockNetworkClient.errorToThrow = expectedError
+        mockNetworkClient.resultToReturn = .failure(expectedError)
         
-        do {
-            _ = try await apiClient.fetchUser(with: "1")
-            XCTFail("expected error to be thrown")
-        } catch (let error) {
-            XCTAssertEqual(error as? NetworkError, expectedError)
+        let result = await apiClient.fetchUser(with: "1")
+        
+        if case .failure(let returnedError) = result {
+            XCTAssertEqual(returnedError, expectedError)
+        } else {
+            XCTFail("Expected failure result. \(result)")
         }
     }
 }

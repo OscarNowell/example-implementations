@@ -10,16 +10,12 @@ import Foundation
 
 class MockNetworkClient: NetworkClient {
     
-    var dataToReturn: Data?
-    var errorToThrow: Error?
+    var resultToReturn: Result<Data, NetworkError>?
     
-    func fetch(from url: URL) async throws -> Data {
-        if let error = errorToThrow {
-            throw error
+    func fetch(from url: URL) async -> Result<Data, NetworkError> {
+        guard let result = resultToReturn else {
+            fatalError("MockNetworkClient result was not set")
         }
-        guard let data = dataToReturn else {
-            throw NetworkError.decodingError
-        }
-        return data
+        return result
     }
 }

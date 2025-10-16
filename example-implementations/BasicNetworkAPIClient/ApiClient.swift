@@ -14,7 +14,7 @@ enum NetworkError: Error, Equatable {
 }
 
 protocol NetworkClient {
-    func fetch(from url: URL) async throws -> Data
+    func fetch(from url: URL) async -> Result<Data, NetworkError>
 }
 
 class ApiClient {
@@ -27,19 +27,24 @@ class ApiClient {
         self.networkClient = networkClient
     }
     
-    func fetchUser(with userId: String) async throws -> User {
+    func fetchUser(with userId: String) async -> Result<User, NetworkError> {
         
         guard let url = URL(string: "\(baseUrl)user/\(userId)") else {
-            throw NetworkError.urlError
+            return .failure(.urlError)
         }
         
-        let data = try await networkClient.fetch(from: url)
+        let result = await networkClient.fetch(from: url)
         
-        do {
-            let user = try JSONDecoder().decode(User.self, from: data)
-            return user
-        } catch {
-            throw NetworkError.decodingError
+        switch result {
+        case .failure(let error):
+            return .failure(error)
+        case .success(let data):
+            do {
+                let user = try JSONDecoder().decode(User.self, from: data)
+                return .success(user)
+            } catch {
+                return .failure(.decodingError)
+            }
         }
     }
 }
