@@ -26,4 +26,9 @@ final class ApiClientTests: XCTestCase {
     func test_apiClient_hasBaseUrl() throws {
         XCTAssertNotNil(apiClient.baseUrl)
     }
+    
+    // test base URL is valid String
+    func test_apiClient_baseUrlIsValidString() throws {
+        XCTAssertTrue(!apiClient.baseUrl.isEmpty)
+    }
 }

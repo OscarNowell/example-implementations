@@ -9,5 +9,5 @@ import Foundation
 
 class ApiClient {
     
-    let baseUrl: String = ""
+    let baseUrl: String = "https://api.github.com/"
 }
