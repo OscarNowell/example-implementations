@@ -35,12 +35,12 @@ final class ApiClientTests: XCTestCase {
     }
     
     // test fetchUser returns valid response object with network call
-    func test_apiClient_fetchUser_returnsValidResponseObject() async throws {
+    func test_apiClient_fetchUser_returnsValidUserObject() async throws {
         
         let mockNetworkClient = MockNetworkClient()
         apiClient = ApiClient(networkClient: mockNetworkClient)
         
-        let expectedUser = User(id: "1")
+        let expectedUser = User(id: "1", name: "Example Name", email: "exampleEmail@Email.com")
         let jsonData = try JSONEncoder().encode(expectedUser)
         mockNetworkClient.dataToReturn = jsonData
         
@@ -50,7 +50,7 @@ final class ApiClientTests: XCTestCase {
     }
     
     // test fetchUser returns the correct error on fail
-    func test_apiClient_fetchUser_returnsCorrectErrorResponse() async {
+    func test_apiClient_fetchUser_returnsCorrectError() async {
         
         let mockNetworkClient = MockNetworkClient()
         apiClient = ApiClient(networkClient: mockNetworkClient)
@@ -65,5 +65,4 @@ final class ApiClientTests: XCTestCase {
             XCTAssertEqual(error as? NetworkError, expectedError)
         }
     }
-    
 }

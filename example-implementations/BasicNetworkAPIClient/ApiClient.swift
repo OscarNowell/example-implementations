@@ -46,4 +46,6 @@ class ApiClient {
 
 struct User: Equatable, Codable {
     let id: String
+    let name: String
+    let email: String
 }
