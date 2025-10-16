@@ -37,6 +37,7 @@ class ApiClient {
             throw NetworkError.urlError
         }
         
+        // because the return type of this method is User, the compiler can infer that fetch HAS to return a User, or throw an error
         return try await fetch(from: url)
     }
     
