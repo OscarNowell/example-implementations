@@ -9,13 +9,15 @@ import XCTest
 
 @testable import example_implementations
 
+@MainActor
 final class ApiClientTests: XCTestCase {
     
     private var apiClient: ApiClient!
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
-        apiClient = ApiClient()
+        let mockNetworkClient = MockNetworkClient()
+        apiClient = ApiClient(networkClient: mockNetworkClient)
     }
 
     override func tearDownWithError() throws {
@@ -32,29 +34,25 @@ final class ApiClientTests: XCTestCase {
         XCTAssertTrue(!apiClient.baseUrl.isEmpty)
     }
     
-    // test fetchUser returns a response object with success and user
-    func test_apiClient_fetchUser_returnsResponseObjectOfSuccessTypeWithUser() throws {
-        let testUserId = "userId"
-        let response = apiClient.fetchUser(with: testUserId, fail: false)
+    // test fetchUser returns valid response object with network call
+    func test_apiClient_fetchUser_returnsValidResponseObject() async throws {
         
-        if case .success(let user) = response {
-            XCTAssertEqual(user.id, testUserId)
+        let mockNetworkClient = MockNetworkClient()
+        apiClient = ApiClient(networkClient: mockNetworkClient)
+        
+        let expectedUser = User(id: "1")
+        let expectedResponse = Response.success(user: expectedUser)
+        let jsonData = try JSONEncoder().encode(expectedUser)
+        mockNetworkClient.dataToReturn = jsonData
+        
+        let response = try await apiClient.fetchUser(with: "1")
+        
+        if case .success(_) = response {
+            XCTAssertEqual(response, expectedResponse)
             return
         }
         
-        XCTFail("expected response to be of type success")
-    }
-    
-    func test_apiClient_fetchUser_returnsResponseObjectWithErrorWhenFailed() throws {
-        let testUserId = "userId"
-        let response = apiClient.fetchUser(with: testUserId, fail: true)
-        
-        if case .error(let message) = response {
-            XCTAssertNotNil(message)
-            return
-        }
-        
-        XCTFail("expected response to be of type error")
+        XCTFail("expected response to be of success type")
     }
     
 }
