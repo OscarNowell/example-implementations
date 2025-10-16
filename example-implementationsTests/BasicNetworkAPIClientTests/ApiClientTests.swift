@@ -33,9 +33,9 @@ final class ApiClientTests: XCTestCase {
     }
     
     // test fetchUser returns a response object with success and user
-    func test_apiClient_fetchUser_returnsResponseObjectWithUser() throws {
+    func test_apiClient_fetchUser_returnsResponseObjectOfSuccessTypeWithUser() throws {
         let testUserId = "userId"
-        let response = apiClient.fetchUser(with: testUserId)
+        let response = apiClient.fetchUser(with: testUserId, fail: false)
         
         if case .success(let user) = response {
             XCTAssertEqual(user.id, testUserId)
@@ -43,6 +43,18 @@ final class ApiClientTests: XCTestCase {
         }
         
         XCTFail("expected response to be of type success")
+    }
+    
+    func test_apiClient_fetchUser_returnsResponseObjectWithErrorWhenFailed() throws {
+        let testUserId = "userId"
+        let response = apiClient.fetchUser(with: testUserId, fail: true)
+        
+        if case .error(let message) = response {
+            XCTAssertNotNil(message)
+            return
+        }
+        
+        XCTFail("expected response to be of type error")
     }
     
 }

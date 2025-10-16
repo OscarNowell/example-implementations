@@ -11,8 +11,12 @@ class ApiClient {
     
     let baseUrl: String = "https://api.github.com/"
     
-    func fetchUser(with userId: String) -> Response {
-        return .success(user: User(id: userId))
+    func fetchUser(with userId: String, fail: Bool) -> Response {
+        if fail {
+            return .error(message: "error message")
+        } else {
+            return .success(user: User(id: userId))
+        }
     }
 }
 
@@ -22,4 +26,5 @@ struct User {
 
 enum Response {
     case success(user: User)
+    case error(message: String)
 }
