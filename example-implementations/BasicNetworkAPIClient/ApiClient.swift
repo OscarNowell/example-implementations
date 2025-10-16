@@ -11,7 +11,11 @@ class ApiClient {
     
     let baseUrl: String = "https://api.github.com/"
     
-    func fetchUser() -> String {
-        return "user"
+    func fetchUser() -> User {
+        return User(id: "userId")
     }
+}
+
+struct User {
+    let id: String
 }

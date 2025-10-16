@@ -32,10 +32,11 @@ final class ApiClientTests: XCTestCase {
         XCTAssertTrue(!apiClient.baseUrl.isEmpty)
     }
     
-    // test fetchUser returns a user
-    func test_apiClient_fetchUser_returnsUser() throws {
+    // test fetchUser returns a user object with id
+    func test_apiClient_fetchUser_returnsUserWithId() throws {
         let returnedUser = apiClient.fetchUser()
         
-        XCTAssertNotNil(returnedUser)
+        XCTAssertNotNil(returnedUser.id)
     }
+    
 }
