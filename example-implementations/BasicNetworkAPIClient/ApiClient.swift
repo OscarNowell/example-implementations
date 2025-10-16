@@ -37,7 +37,13 @@ class ApiClient {
             throw NetworkError.urlError
         }
         
-        // await async call to the network client to fetch data and response from the given url
+        return try await fetch(from: url)
+    }
+    
+    // a generic fetch function that returns type T
+    private func fetch<T: Decodable>(from url: URL) async throws -> T {
+        
+        // await the result of the fetch call to the network client
         let (data, response) = try await networkClient.fetch(from: url)
         
         // guards against statusCodes that would indicate an error has been returned. In this case anything outside of 200 - 299
@@ -48,7 +54,7 @@ class ApiClient {
         
         // try to decode and return the fetched JSON in a User object, throwing the appropriate error if failed
         do {
-            return try JSONDecoder().decode(User.self, from: data)
+            return try JSONDecoder().decode(T.self, from: data)
         } catch {
             throw NetworkError.decodingError
         }
