@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum NetworkError: Error {
+enum NetworkError: Error, Equatable {
     case urlError
     case decodingError
     case fetchError
@@ -33,9 +33,9 @@ class ApiClient {
             throw NetworkError.urlError
         }
         
+        let data = try await networkClient.fetch(from: url)
+        
         do {
-            let data = try await networkClient.fetch(from: url)
-            
             let user = try JSONDecoder().decode(User.self, from: data)
             return Response.success(user: user)
         } catch {
@@ -50,5 +50,5 @@ struct User: Equatable, Codable {
 
 enum Response: Equatable {
     case success(user: User)
-    case error(message: String)
+    case error(error: NetworkError)
 }

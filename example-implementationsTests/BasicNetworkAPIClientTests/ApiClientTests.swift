@@ -55,4 +55,21 @@ final class ApiClientTests: XCTestCase {
         XCTFail("expected response to be of success type")
     }
     
+    // test fetchUser returns the correct error on fail
+    func test_apiClient_fetchUser_returnsCorrectErrorResponse() async {
+        
+        let mockNetworkClient = MockNetworkClient()
+        apiClient = ApiClient(networkClient: mockNetworkClient)
+
+        let expectedError = NetworkError.fetchError
+        mockNetworkClient.errorToThrow = expectedError
+        
+        do {
+            _ = try await apiClient.fetchUser(with: "1")
+            XCTFail("expected error to be thrown")
+        } catch (let error) {
+            XCTAssertEqual(error as? NetworkError, expectedError)
+        }
+    }
+    
 }
