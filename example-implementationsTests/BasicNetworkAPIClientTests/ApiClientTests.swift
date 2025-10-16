@@ -76,7 +76,6 @@ final class ApiClientTests: XCTestCase {
         do {
             _ = try await apiClient.fetchUser(with: "1")
             XCTFail("Expected fetch user to throw an error, but it succeeded")
-            XCTFail("expected error to be thrown")
         } catch let error as NetworkError {
             XCTAssertEqual(error, .serverError(statusCode: 404))
         } catch {
