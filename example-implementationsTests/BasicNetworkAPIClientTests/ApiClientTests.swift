@@ -32,12 +32,17 @@ final class ApiClientTests: XCTestCase {
         XCTAssertTrue(!apiClient.baseUrl.isEmpty)
     }
     
-    // test fetchUser returns a user object with passed in id
-    func test_apiClient_fetchUser_returnsUserWithPassedInId() throws {
+    // test fetchUser returns a response object with success and user
+    func test_apiClient_fetchUser_returnsResponseObjectWithUser() throws {
         let testUserId = "userId"
-        let returnedUser = apiClient.fetchUser(with: testUserId)
+        let response = apiClient.fetchUser(with: testUserId)
         
-        XCTAssertEqual(returnedUser.id, testUserId)
+        if case .success(let user) = response {
+            XCTAssertEqual(user.id, testUserId)
+            return
+        }
+        
+        XCTFail("expected response to be of type success")
     }
     
 }
