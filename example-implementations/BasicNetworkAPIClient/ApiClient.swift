@@ -10,4 +10,8 @@ import Foundation
 class ApiClient {
     
     let baseUrl: String = "https://api.github.com/"
+    
+    func fetchUser() -> String {
+        return "user"
+    }
 }
