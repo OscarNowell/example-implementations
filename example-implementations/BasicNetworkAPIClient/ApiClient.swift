@@ -27,7 +27,7 @@ class ApiClient {
         self.networkClient = networkClient
     }
     
-    func fetchUser(with userId: String) async throws -> Response {
+    func fetchUser(with userId: String) async throws -> User {
         
         guard let url = URL(string: "\(baseUrl)user/\(userId)") else {
             throw NetworkError.urlError
@@ -37,7 +37,7 @@ class ApiClient {
         
         do {
             let user = try JSONDecoder().decode(User.self, from: data)
-            return Response.success(user: user)
+            return user
         } catch {
             throw NetworkError.decodingError
         }
@@ -46,9 +46,4 @@ class ApiClient {
 
 struct User: Equatable, Codable {
     let id: String
-}
-
-enum Response: Equatable {
-    case success(user: User)
-    case error(error: NetworkError)
 }

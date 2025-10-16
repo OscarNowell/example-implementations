@@ -41,18 +41,12 @@ final class ApiClientTests: XCTestCase {
         apiClient = ApiClient(networkClient: mockNetworkClient)
         
         let expectedUser = User(id: "1")
-        let expectedResponse = Response.success(user: expectedUser)
         let jsonData = try JSONEncoder().encode(expectedUser)
         mockNetworkClient.dataToReturn = jsonData
         
-        let response = try await apiClient.fetchUser(with: "1")
+        let user = try await apiClient.fetchUser(with: "1")
         
-        if case .success(_) = response {
-            XCTAssertEqual(response, expectedResponse)
-            return
-        }
-        
-        XCTFail("expected response to be of success type")
+        XCTAssertEqual(user, expectedUser)
     }
     
     // test fetchUser returns the correct error on fail
