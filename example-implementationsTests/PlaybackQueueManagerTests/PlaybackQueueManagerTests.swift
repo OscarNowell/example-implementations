@@ -9,6 +9,7 @@ import XCTest
 
 @testable import example_implementations
 
+@MainActor
 final class PlaybackQueueManagerTests: XCTestCase {
     
     var sut: PlaybackQueueManager!
@@ -31,6 +32,17 @@ final class PlaybackQueueManagerTests: XCTestCase {
         
         sut.addToQueue(add: expectedMediaItem)
         
-        XCTAssertEqual(sut.currentlyPlayingQueue[expectedMediaItem.id], expectedMediaItem)
+        XCTAssertEqual(sut.currentlyPlayingQueue[0], expectedMediaItem)
+    }
+    
+    func test_playbackQueueManager_addToQueue_addsMediaItemToEndOfQueue() throws {
+        let existingMediaItem = MediaItem(id: "2", title: "title", durationInSeconds: 10)
+        sut.addToQueue(add: existingMediaItem)
+        
+        let expectedMediaItem = MediaItem(id: "1", title: "title", durationInSeconds: 10)
+        
+        sut.addToQueue(add: expectedMediaItem)
+        
+        XCTAssertEqual(sut.currentlyPlayingQueue.last, expectedMediaItem)
     }
 }
