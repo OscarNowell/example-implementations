@@ -33,12 +33,12 @@ struct User: Equatable, Codable {
     let email: String
     var cachedTime: Date?
     
-    func isCacheInvalid(invalidateAfter: Double) -> Bool {
+    func isCacheValid(invalidateAfter: Double) -> Bool {
         guard let validCachedTime = cachedTime else {
-            return true
+            return false
         }
         
-        return validCachedTime < (Date() - invalidateAfter)
+        return validCachedTime > (Date() - invalidateAfter)
     }
 }
 
@@ -46,6 +46,7 @@ class ApiClient {
     
     private let networkClient: NetworkClient
     
+    private let invalidateCacheAfter: Double = 60
     let baseUrl: String = "https://api.github.com/"
     let acceptableStatusCodeRange: ClosedRange = 200...299
     
@@ -67,7 +68,7 @@ class ApiClient {
         // if we have a cached user matching the passed in id
         if let cachedUser = cachedUsers.first(where: { $0.id == userId }) {
             // if the cached users cachedTime is valid and isn't under the current time
-            if cachedUser.cachedTime != nil && !(cachedUser.cachedTime! < Date()) {
+            if cachedUser.isCacheValid(invalidateAfter: invalidateCacheAfter) {
                 return cachedUser
             } else {
                 // otherwise remove the cached user becacuse it's become invalid
