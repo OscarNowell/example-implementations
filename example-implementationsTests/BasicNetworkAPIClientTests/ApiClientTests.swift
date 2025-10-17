@@ -51,7 +51,7 @@ final class ApiClientTests: XCTestCase {
             headerFields: nil
         )!
         
-        mockNetworkClient.result = .success((jsonData, response200))
+        mockNetworkClient.result = NetworkClientResponse(data: jsonData, urlResponse: response200)
         
         let actualUser = try await apiClient.fetchUser(with: "1")
         
@@ -71,8 +71,8 @@ final class ApiClientTests: XCTestCase {
             headerFields: nil
         )!
         
-        mockNetworkClient.result = .success((Data(), response404))
-        
+        mockNetworkClient.result = NetworkClientResponse(data: Data(), urlResponse: response404)
+
         do {
             _ = try await apiClient.fetchUser(with: "1")
             XCTFail("Expected fetch user to throw an error, but it succeeded")

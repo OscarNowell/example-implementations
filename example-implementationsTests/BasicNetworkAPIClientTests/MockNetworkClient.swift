@@ -10,9 +10,9 @@ import Foundation
 
 class MockNetworkClient: NetworkClient {
     
-    var result: Result<(Data, URLResponse), Error>!
+    var result: NetworkClientResponse?
     
-    func fetch(from url: URL) async throws -> (Data, URLResponse) {
-        return try result.get()
+    func fetch(from url: URL) async throws -> NetworkClientResponse {
+        return result!
     }
 }

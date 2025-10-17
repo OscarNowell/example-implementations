@@ -15,8 +15,22 @@ enum NetworkError: Error, Equatable {
 }
 
 // protocol for making it easy to mock the network client for testing
+// custom response object returned instead of default tuple for readability
 protocol NetworkClient {
-    func fetch(from url: URL) async throws -> (Data, URLResponse)
+    func fetch(from url: URL) async throws -> NetworkClientResponse
+}
+
+// response object for passing back result from URLSession
+struct NetworkClientResponse {
+    let data: Data
+    let urlResponse: URLResponse
+}
+
+// user struct for decoding returned JSON into
+struct User: Equatable, Codable {
+    let id: String
+    let name: String
+    let email: String
 }
 
 class ApiClient {
@@ -24,6 +38,7 @@ class ApiClient {
     private let networkClient: NetworkClient
     
     let baseUrl: String = "https://api.github.com/"
+    let acceptableStatusCodeRange: ClosedRange = 200...299
     
     init(networkClient: NetworkClient) {
         self.networkClient = networkClient
@@ -45,25 +60,24 @@ class ApiClient {
     private func fetch<T: Decodable>(from url: URL) async throws -> T {
         
         // await the result of the fetch call to the network client
-        let (data, response) = try await networkClient.fetch(from: url)
+        let networkClientResponse = try await networkClient.fetch(from: url)
         
-        // guards against statusCodes that would indicate an error has been returned. In this case anything outside of 200 - 299
-        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
-            throw NetworkError.serverError(statusCode: statusCode)
+        // guard against an invalid response from the network client
+        guard let httpResponse = networkClientResponse.urlResponse as? HTTPURLResponse else {
+            // if response isn't a valid HTTPURLResponse then we have no statusCode, so throw effort with default code of 0
+            throw NetworkError.serverError(statusCode: 0)
+        }
+        
+        // check the returned statusCode is within the acceptable range
+        if !acceptableStatusCodeRange.contains(httpResponse.statusCode) {
+            throw NetworkError.serverError(statusCode: httpResponse.statusCode)
         }
         
         // try to decode and return the fetched JSON in a User object, throwing the appropriate error if failed
         do {
-            return try JSONDecoder().decode(T.self, from: data)
+            return try JSONDecoder().decode(T.self, from: networkClientResponse.data)
         } catch {
             throw NetworkError.decodingError
         }
     }
-}
-
-struct User: Equatable, Codable {
-    let id: String
-    let name: String
-    let email: String
 }
