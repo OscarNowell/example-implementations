@@ -57,6 +57,10 @@ class ApiClient {
         self.networkClient = networkClient
     }
     
+    func forceRefresh() {
+        cachedUsers.removeAll()
+    }
+    
     // handles fetch user call and returning either a User object or throwing an error
     func fetchUser(with userId: String) async throws -> User {
         
@@ -67,7 +71,7 @@ class ApiClient {
         
         // if we have a cached user matching the passed in id
         if let cachedUser = cachedUsers.first(where: { $0.id == userId }) {
-            // if the cached users cachedTime is valid and isn't under the current time
+            // if the cached users cachedTime is valid
             if cachedUser.isCacheValid(invalidateAfter: invalidateCacheAfter) {
                 return cachedUser
             } else {

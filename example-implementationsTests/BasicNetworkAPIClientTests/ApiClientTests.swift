@@ -168,4 +168,16 @@ final class ApiClientTests: XCTestCase {
         
         XCTAssertEqual(actualUser.id, expectedUser.id)
     }
+    
+    func test_apiClient_forceRefresh_clearsCachedUsers() throws {
+        let user1 = User(id: "1", name: "John Smith", email: "john.smith@email.com", cachedTime: Date())
+        let user2 = User(id: "2", name: "Sarah Smith", email: "sarah.smith@email.com", cachedTime: Date())
+        
+        apiClient.cachedUsers.append(user1)
+        apiClient.cachedUsers.append(user2)
+        
+        apiClient.forceRefresh()
+        
+        XCTAssertTrue(apiClient.cachedUsers.isEmpty)
+    }
 }
