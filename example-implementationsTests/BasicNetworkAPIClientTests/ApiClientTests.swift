@@ -128,4 +128,18 @@ final class ApiClientTests: XCTestCase {
         
         XCTAssertEqual(actualUser.cachedTime, expectedUser.cachedTime)
     }
+    
+    func test_apiClient_fetchUser_doesntFetchUserFromNetworkIfCacheAvailable() async throws {
+        let mockNetworkClient = MockNetworkClient()
+        apiClient = ApiClient(networkClient: mockNetworkClient)
+        
+        let expectedCachedUser = User(id: "1", name: "John Smith", email: "john.smith@email.com", cachedTime: Date())
+        
+        apiClient.cachedUsers.append(expectedCachedUser)
+        
+        let actualUser = try await apiClient.fetchUser(with: "1")
+        
+        XCTAssertEqual(actualUser.cachedTime, expectedCachedUser.cachedTime)
+        XCTAssertTrue(apiClient.cachedUsers.count == 1)
+    }
 }
