@@ -185,4 +185,6 @@ final class ApiClientTests: XCTestCase {
         
         XCTAssertTrue(apiClient.cachedUsers.isEmpty)
     }
+    
+    // TODO: add test for checking cache in the case where a fetch call throws an error
 }

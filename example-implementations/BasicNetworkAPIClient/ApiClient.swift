@@ -56,7 +56,7 @@ class ApiClient {
     let baseUrl: String = "https://api.github.com/"
     let acceptableStatusCodeRange: ClosedRange = 200...299
     
-    // this could be a Set to automatically have unique values?
+    // TODO: refactor this to be a dictionary to allow quick lookup and easy scalability
     var cachedUsers: [CachedUser] = []
     
     init(networkClient: NetworkClient) {

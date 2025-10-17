@@ -32,4 +32,6 @@ final class UserTests: XCTestCase {
         
         XCTAssertFalse(cachedUserToTest.isCacheValid(invalidateAfter: 0))
     }
+    
+    // TODO: Optimise - add test for EXACT bounds (i.e. in invalidate after is 60 and the cachedTime is Date() - 60
 }
