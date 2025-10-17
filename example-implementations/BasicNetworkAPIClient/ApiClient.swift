@@ -31,6 +31,7 @@ struct User: Equatable, Codable {
     let id: String
     let name: String
     let email: String
+    var cachedTime: Date?
 }
 
 class ApiClient {
@@ -54,8 +55,14 @@ class ApiClient {
             throw NetworkError.urlError
         }
         
-        // because the return type of this method is User, the compiler can infer that fetch HAS to return a User, or throw an error
-        let user = try await fetch(from: url) as User
+        // if we have a cached user matching the passed in id, then return the cached user
+        if let cachedUser = cachedUsers.first(where: { $0.id == userId }) {
+            return cachedUser
+        }
+
+        var user = try await fetch(from: url) as User
+        
+        user.cachedTime = Date()
         
         cachedUsers.append(user)
         
