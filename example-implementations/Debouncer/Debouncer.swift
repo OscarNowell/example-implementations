@@ -17,7 +17,6 @@ class Debouncer{
     }
     
     // function for checking if the last key stroke was entered OVER 300ms ago
-    // IF 300ms has passed, should execute API call with search query
     func debounce(action: @escaping () async -> Void) {
         currentTask?.cancel()
         
