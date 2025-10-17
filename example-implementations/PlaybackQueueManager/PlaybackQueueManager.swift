@@ -10,13 +10,13 @@ import Foundation
 class PlaybackQueueManager {
     
     // holds users playback queue of media items in an ordered array
-    var currentlyPlayingQueue: [MediaItem] = []
+    var mediaItemQueue: [MediaItem] = []
     
     // expose state of currentlyPlayingMedia item in form of media items id
     
     // public method for adding media item to the queue
     func addToQueue(add mediaItem: MediaItem) {
-        currentlyPlayingQueue.append(mediaItem)
+        mediaItemQueue.append(mediaItem)
     }
     
     // public method for playing next

@@ -24,7 +24,7 @@ final class PlaybackQueueManagerTests: XCTestCase {
     }
     
     func test_playbackQueueManager_hasCurrentlyPlayingQueue() throws {
-        XCTAssertNotNil(sut.currentlyPlayingQueue)
+        XCTAssertNotNil(sut.mediaItemQueue)
     }
     
     func test_playbackQueueManager_addToQueue_addsMediaItemToQueue() throws {
@@ -32,7 +32,7 @@ final class PlaybackQueueManagerTests: XCTestCase {
         
         sut.addToQueue(add: expectedMediaItem)
         
-        XCTAssertEqual(sut.currentlyPlayingQueue[0], expectedMediaItem)
+        XCTAssertEqual(sut.mediaItemQueue[0], expectedMediaItem)
     }
     
     func test_playbackQueueManager_addToQueue_addsMediaItemToEndOfQueue() throws {
@@ -43,6 +43,6 @@ final class PlaybackQueueManagerTests: XCTestCase {
         
         sut.addToQueue(add: expectedMediaItem)
         
-        XCTAssertEqual(sut.currentlyPlayingQueue.last, expectedMediaItem)
+        XCTAssertEqual(sut.mediaItemQueue.last, expectedMediaItem)
     }
 }
