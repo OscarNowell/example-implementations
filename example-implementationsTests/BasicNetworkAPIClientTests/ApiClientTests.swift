@@ -148,6 +148,32 @@ final class ApiClientTests: XCTestCase {
         XCTAssertEqual(mockNetworkClient.fetchCallCount, 1)
     }
     
+    func test_apiClient_fetchUser_returnsNewUserFromNetworkIfCacheIsInvalid() async throws {
+        let mockNetworkClient = MockNetworkClient()
+        apiClient = ApiClient(networkClient: mockNetworkClient)
+        
+        let expectedUser = User(id: "1", name: "John Smith", email: "john.smith@email.com")
+        let oldCachedUser = CachedUser(user: expectedUser, cachedTime: Date() - 80)
+        
+        apiClient.cachedUsers.append(oldCachedUser)
+        
+        let jsonData = try JSONEncoder().encode(expectedUser)
+        
+        let response200 = HTTPURLResponse(
+            url: URL(string: "example_url")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )!
+        
+        mockNetworkClient.result = NetworkClientResponse(data: jsonData, urlResponse: response200)
+        
+        let actualUser = try await apiClient.fetchUser(with: "1")
+        
+        XCTAssertEqual(actualUser, expectedUser)
+        XCTAssertEqual(mockNetworkClient.fetchCallCount, 1)
+    }
+    
     func test_apiClient_forceRefresh_clearsCachedUsers() throws {
         let user1 = User(id: "1", name: "John Smith", email: "john.smith@email.com")
         let user2 = User(id: "2", name: "Sarah Smith", email: "sarah.smith@email.com")

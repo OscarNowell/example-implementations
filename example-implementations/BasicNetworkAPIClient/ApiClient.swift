@@ -77,7 +77,7 @@ class ApiClient {
         
         // if we have a cached user matching the passed in id
         if let cachedUser = cachedUsers.first(where: { $0.user.id == userId }) {
-            // if the cached users cachedTime is valid
+            // if the cached users cachedTime is valid then return the cached user
             if cachedUser.isCacheValid(invalidateAfter: invalidateCacheAfter) {
                 return cachedUser.user
             } else {
