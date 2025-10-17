@@ -31,17 +31,40 @@ struct User: Equatable, Codable {
     let id: String
     let name: String
     let email: String
+    
+}
+
+struct CachedUser {
+    let user: User
+    
+    var cachedTime: Date?
+    
+    func isCacheValid(invalidateAfter: Double) -> Bool {
+        guard let validCachedTime = cachedTime else {
+            return false
+        }
+        
+        return validCachedTime > (Date() - invalidateAfter)
+    }
 }
 
 class ApiClient {
     
     private let networkClient: NetworkClient
     
+    private let invalidateCacheAfter: Double = 60
     let baseUrl: String = "https://api.github.com/"
     let acceptableStatusCodeRange: ClosedRange = 200...299
     
+    // TODO: refactor this to be a dictionary to allow quick lookup and easy scalability
+    var cachedUsers: [CachedUser] = []
+    
     init(networkClient: NetworkClient) {
         self.networkClient = networkClient
+    }
+    
+    func forceRefresh() {
+        cachedUsers.removeAll()
     }
     
     // handles fetch user call and returning either a User object or throwing an error
@@ -52,8 +75,24 @@ class ApiClient {
             throw NetworkError.urlError
         }
         
-        // because the return type of this method is User, the compiler can infer that fetch HAS to return a User, or throw an error
-        return try await fetch(from: url)
+        // if we have a cached user matching the passed in id
+        if let cachedUser = cachedUsers.first(where: { $0.user.id == userId }) {
+            // if the cached users cachedTime is valid then return the cached user
+            if cachedUser.isCacheValid(invalidateAfter: invalidateCacheAfter) {
+                return cachedUser.user
+            } else {
+                // otherwise remove the cached user becacuse it's become invalid
+                cachedUsers.removeAll(where: { $0.user.id == userId })
+            }
+        }
+
+        let user = try await fetch(from: url) as User
+        
+        let newCachedUser = CachedUser(user: user, cachedTime: Date())
+        
+        cachedUsers.append(newCachedUser)
+        
+        return user
     }
     
     // a generic fetch function that returns type T
