@@ -40,6 +40,8 @@ class ApiClient {
     let baseUrl: String = "https://api.github.com/"
     let acceptableStatusCodeRange: ClosedRange = 200...299
     
+    var cachedUsers: [User] = []
+    
     init(networkClient: NetworkClient) {
         self.networkClient = networkClient
     }
@@ -53,7 +55,11 @@ class ApiClient {
         }
         
         // because the return type of this method is User, the compiler can infer that fetch HAS to return a User, or throw an error
-        return try await fetch(from: url)
+        let user = try await fetch(from: url) as User
+        
+        cachedUsers.append(user)
+        
+        return user
     }
     
     // a generic fetch function that returns type T

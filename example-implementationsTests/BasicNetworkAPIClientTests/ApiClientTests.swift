@@ -82,4 +82,26 @@ final class ApiClientTests: XCTestCase {
             XCTFail("An unexpected error type was thrown: \(error)")
         }
     }
+    
+    func test_apiClient_fetchUser_onSuccessCachesUser() async throws {
+        let mockNetworkClient = MockNetworkClient()
+        apiClient = ApiClient(networkClient: mockNetworkClient)
+        
+        let expectedUser = User(id: "1", name: "John Smith", email: "john.smith@email.com")
+        
+        let jsonData = try JSONEncoder().encode(expectedUser)
+        
+        let response200 = HTTPURLResponse(
+            url: URL(string: "example_url")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )!
+        
+        mockNetworkClient.result = NetworkClientResponse(data: jsonData, urlResponse: response200)
+        
+        try await apiClient.fetchUser(with: "1")
+        
+        XCTAssertTrue(apiClient.cachedUsers.contains(expectedUser))
+    }
 }
