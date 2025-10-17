@@ -45,4 +45,49 @@ final class PlaybackQueueManagerTests: XCTestCase {
         
         XCTAssertEqual(sut.mediaItemQueue.last, expectedMediaItem)
     }
+    
+    func test_playbackQueueManager_playNext_changesCurrentlyPlayingIndexToNextItem() throws {
+        let existingMediaItem = MediaItem(id: "2", title: "title", durationInSeconds: 10)
+        sut.addToQueue(add: existingMediaItem)
+        
+        let expectedMediaItem = MediaItem(id: "1", title: "title", durationInSeconds: 10)
+        
+        sut.addToQueue(add: expectedMediaItem)
+        
+        sut.playNext()
+        
+        XCTAssertEqual(sut.currentlyPlayingMediaIndex, 1)
+    }
+    
+    func test_playbackQueueManager_playPrevious_changesCurrentlyPlayingIndexToPreviousItem() throws {
+        let existingMediaItem = MediaItem(id: "2", title: "title", durationInSeconds: 10)
+        sut.addToQueue(add: existingMediaItem)
+        
+        let expectedMediaItem = MediaItem(id: "1", title: "title", durationInSeconds: 10)
+        
+        sut.addToQueue(add: expectedMediaItem)
+        
+        sut.playPrevious()
+        
+        XCTAssertEqual(sut.currentlyPlayingMediaIndex, -1)
+    }
+    
+    func test_playbackQueueManager_currentlyPlayingItem_isNullIfIndexOutOfBounds() throws {
+        XCTAssertNil(sut.currentlyPlayingItem)
+    }
+    
+    func test_playbackQueueManager_currentlyPlayingItem_returnsCorrectItemForIndex() throws {
+        let existingMediaItem = MediaItem(id: "2", title: "title", durationInSeconds: 10)
+        sut.addToQueue(add: existingMediaItem)
+        
+        let expectedMediaItem = MediaItem(id: "1", title: "title", durationInSeconds: 10)
+        
+        sut.addToQueue(add: expectedMediaItem)
+        
+        XCTAssertEqual(existingMediaItem, sut.currentlyPlayingItem)
+    }
+    
+    func test_playbackQueueManager_playNext_whenEmptyDoesNothing() throws {
+      //  let expectedIndex 
+    }
 }

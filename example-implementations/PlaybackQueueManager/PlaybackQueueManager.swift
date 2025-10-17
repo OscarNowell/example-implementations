@@ -10,9 +10,19 @@ import Foundation
 class PlaybackQueueManager {
     
     // holds users playback queue of media items in an ordered array
-    var mediaItemQueue: [MediaItem] = []
+    private(set) var mediaItemQueue: [MediaItem] = []
     
     // expose state of currentlyPlayingMedia item in form of media items id
+    private(set) var currentlyPlayingMediaIndex: Int = -1
+    
+    var currentlyPlayingItem: MediaItem? {
+        get {
+            guard mediaItemQueue.indices.contains(currentlyPlayingMediaIndex) else {
+                return nil
+            }
+            return mediaItemQueue[currentlyPlayingMediaIndex]
+        }
+    }
     
     // public method for adding media item to the queue
     func addToQueue(add mediaItem: MediaItem) {
@@ -20,9 +30,17 @@ class PlaybackQueueManager {
     }
     
     // public method for playing next
+    func playNext() {
+        
+        guard mediaItemQueue.indices.contains(currentlyPlayingMediaIndex + 1) else { return }
+        
+        currentlyPlayingMediaIndex += 1
+    }
     
     // public method for playing previous
-    
+    func playPrevious() {
+        currentlyPlayingMediaIndex -= 1
+    }
     
 }
 
