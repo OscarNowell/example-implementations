@@ -86,7 +86,7 @@ class ApiClient {
             }
         }
 
-        var user = try await fetch(from: url) as User
+        let user = try await fetch(from: url) as User
         
         let newCachedUser = CachedUser(user: user, cachedTime: Date())
         
