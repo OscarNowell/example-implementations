@@ -32,6 +32,14 @@ struct User: Equatable, Codable {
     let name: String
     let email: String
     var cachedTime: Date?
+    
+    func isCacheInvalid(invalidateAfter: Double) -> Bool {
+        guard let validCachedTime = cachedTime else {
+            return true
+        }
+        
+        return validCachedTime < (Date() - invalidateAfter)
+    }
 }
 
 class ApiClient {
@@ -41,6 +49,7 @@ class ApiClient {
     let baseUrl: String = "https://api.github.com/"
     let acceptableStatusCodeRange: ClosedRange = 200...299
     
+    // this could be a Set to automatically have unique values?
     var cachedUsers: [User] = []
     
     init(networkClient: NetworkClient) {
@@ -55,9 +64,15 @@ class ApiClient {
             throw NetworkError.urlError
         }
         
-        // if we have a cached user matching the passed in id, then return the cached user
+        // if we have a cached user matching the passed in id
         if let cachedUser = cachedUsers.first(where: { $0.id == userId }) {
-            return cachedUser
+            // if the cached users cachedTime is valid and isn't under the current time
+            if cachedUser.cachedTime != nil && !(cachedUser.cachedTime! < Date()) {
+                return cachedUser
+            } else {
+                // otherwise remove the cached user becacuse it's become invalid
+                cachedUsers.removeAll(where: { $0.id == userId })
+            }
         }
 
         var user = try await fetch(from: url) as User
