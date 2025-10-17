@@ -102,58 +102,36 @@ final class ApiClientTests: XCTestCase {
         
         try await apiClient.fetchUser(with: "1")
         
-        XCTAssertTrue(apiClient.cachedUsers.contains(expectedUser))
+        XCTAssertTrue(apiClient.cachedUsers.contains(where: { $0.user == expectedUser}))
     }
     
     func test_apiClient_fetchUser_returnsCachedUserIfAvailable() async throws {
         let mockNetworkClient = MockNetworkClient()
         apiClient = ApiClient(networkClient: mockNetworkClient)
         
-        let expectedUser = User(id: "1", name: "John Smith", email: "john.smith@email.com", cachedTime: Date())
-        
-        apiClient.cachedUsers.append(expectedUser)
-        
-        let jsonData = try JSONEncoder().encode(expectedUser)
-        
-        let response200 = HTTPURLResponse(
-            url: URL(string: "example_url")!,
-            statusCode: 200,
-            httpVersion: nil,
-            headerFields: nil
-        )!
-        
-        mockNetworkClient.result = NetworkClientResponse(data: jsonData, urlResponse: response200)
-        
-        let actualUser = try await apiClient.fetchUser(with: "1")
-        
-        XCTAssertEqual(actualUser.cachedTime, expectedUser.cachedTime)
-    }
-    
-    func test_apiClient_fetchUser_doesntFetchUserFromNetworkIfCacheAvailable() async throws {
-        let mockNetworkClient = MockNetworkClient()
-        apiClient = ApiClient(networkClient: mockNetworkClient)
-        
-        let expectedCachedUser = User(id: "1", name: "John Smith", email: "john.smith@email.com", cachedTime: Date())
+        let expectedUser = User(id: "1", name: "John Smith", email: "john.smith@email.com")
+        let expectedCachedUser = CachedUser(user: expectedUser, cachedTime: Date())
         
         apiClient.cachedUsers.append(expectedCachedUser)
         
         let actualUser = try await apiClient.fetchUser(with: "1")
         
-        XCTAssertEqual(actualUser.cachedTime, expectedCachedUser.cachedTime)
-        XCTAssertTrue(apiClient.cachedUsers.count == 1)
+        XCTAssertEqual(actualUser, expectedCachedUser.user)
+        XCTAssertTrue(mockNetworkClient.fetchCallCount == 0)
     }
     
     func test_apiClient_fetchUser_returnsNewUserFromNetworkIfDifferentUserCached() async throws {
         let mockNetworkClient = MockNetworkClient()
         apiClient = ApiClient(networkClient: mockNetworkClient)
         
-        let expectedCachedUser = User(id: "1", name: "John Smith", email: "john.smith@email.com", cachedTime: Date())
+        let expectedUser = User(id: "1", name: "John Smith", email: "john.smith@email.com")
+        let expectedCachedUser = CachedUser(user: expectedUser, cachedTime: Date())
         
         apiClient.cachedUsers.append(expectedCachedUser)
         
-        let expectedUser = User(id: "2", name: "Sarah Smith", email: "sarah.smith@email.com")
+        let expectedNetworkUser = User(id: "2", name: "Sarah Smith", email: "sarah.smith@email.com")
         
-        let jsonData = try JSONEncoder().encode(expectedUser)
+        let jsonData = try JSONEncoder().encode(expectedNetworkUser)
         
         let response200 = HTTPURLResponse(
             url: URL(string: "example_url")!,
@@ -166,15 +144,16 @@ final class ApiClientTests: XCTestCase {
         
         let actualUser = try await apiClient.fetchUser(with: "2")
         
-        XCTAssertEqual(actualUser.id, expectedUser.id)
+        XCTAssertEqual(actualUser, expectedNetworkUser)
+        XCTAssertEqual(mockNetworkClient.fetchCallCount, 1)
     }
     
     func test_apiClient_forceRefresh_clearsCachedUsers() throws {
-        let user1 = User(id: "1", name: "John Smith", email: "john.smith@email.com", cachedTime: Date())
-        let user2 = User(id: "2", name: "Sarah Smith", email: "sarah.smith@email.com", cachedTime: Date())
+        let user1 = User(id: "1", name: "John Smith", email: "john.smith@email.com")
+        let user2 = User(id: "2", name: "Sarah Smith", email: "sarah.smith@email.com")
         
-        apiClient.cachedUsers.append(user1)
-        apiClient.cachedUsers.append(user2)
+        apiClient.cachedUsers.append(CachedUser(user: user1, cachedTime: Date()))
+        apiClient.cachedUsers.append(CachedUser(user: user2, cachedTime: Date()))
         
         apiClient.forceRefresh()
         

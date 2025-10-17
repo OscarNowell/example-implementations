@@ -10,9 +10,14 @@ import Foundation
 
 class MockNetworkClient: NetworkClient {
     
+    // a fetch call count for the mock so testing can easily check if the fetch from network was called
+    var fetchCallCount = 0
+    
     var result: NetworkClientResponse?
     
     func fetch(from url: URL) async throws -> NetworkClientResponse {
+        fetchCallCount += 1
+        
         return result!
     }
 }
